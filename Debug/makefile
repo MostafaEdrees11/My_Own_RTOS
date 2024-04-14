@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include Startup/subdir.mk
 -include Src/subdir.mk
+-include STM32_F103C6_Drivers/RCC/subdir.mk
 -include STM32_F103C6_Drivers/GPIO/subdir.mk
 -include STM32_F103C6_Drivers/EXTI/subdir.mk
 -include My_Own_RTOS/subdir.mk

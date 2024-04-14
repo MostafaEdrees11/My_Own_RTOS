@@ -22,6 +22,7 @@ SUBDIRS := \
 My_Own_RTOS \
 STM32_F103C6_Drivers/EXTI \
 STM32_F103C6_Drivers/GPIO \
+STM32_F103C6_Drivers/RCC \
 Src \
 Startup \
 
