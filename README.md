@@ -141,7 +141,7 @@ graph TD;
 | Tasks |                      |                      |
 | ----- | -------------------- | -------------------- |
 |       | Task Tables          | Ready Queue          |
-|       | ![[Task Tables.png]] | ![[Ready Queue.png]] |
+|       | ![gitHub]() | ![gitHub]() |
 ___
 # Hardware Initialize
 we initialize CPU clock and  SysTick Timer clock
