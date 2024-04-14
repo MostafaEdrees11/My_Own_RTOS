@@ -1,0 +1,1 @@
+My_Own_RTOS/MYRTOS_FIFO.o: ../My_Own_RTOS/MYRTOS_FIFO.c
