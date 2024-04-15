@@ -4,5 +4,5 @@ Scheduler.c:88:6:OS_SVC_Set	16	static,ignoring_inline_asm
 Scheduler.c:110:6:MyRTOS_Create_MainStack	4	static
 Scheduler.c:119:6:IDLE_TASK_FUNC	4	static,ignoring_inline_asm
 Scheduler.c:127:13:MYRTOS_init	16	static
-Scheduler.c:154:6:MyRTOS_Create_Task_Stack	16	static
-Scheduler.c:199:13:MyRTOS_Create_Task	24	static
+Scheduler.c:154:6:MyRTOS_Create_Task_Stack	24	static
+Scheduler.c:206:13:MyRTOS_Create_Task	24	static

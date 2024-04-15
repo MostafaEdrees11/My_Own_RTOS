@@ -151,13 +151,13 @@ MYRTOS_ES_t MYRTOS_init(void)
 	return Local_enuErrorState;
 }
 
-void MyRTOS_Create_Task_Stack(Task_Ref_t *Task_CFG)
+void MyRTOS_Create_Task_Stack(Task_Ref_t *Task_Ref_CFG)
 {
 	/*
 	 * Task Frame:
-	 * -----------------------------------
-	 * |This Part is saved automatically |
-	 * -----------------------------------
+	 * --------------------------------------------
+	 * |This Part is saved/restored automatically |
+	 * --------------------------------------------
 	 * |-------|
 	 * |  xPSR |
 	 * |  PC   |	//Next Task Instruction which will fetched
@@ -183,17 +183,24 @@ void MyRTOS_Create_Task_Stack(Task_Ref_t *Task_CFG)
 	 * |-------|
 	 */
 
-	Task_CFG->Current_PSP_Task = Task_CFG->_S_PSP_Task;
+	Task_Ref_CFG->Current_PSP_Task = (unsigned int *)(Task_Ref_CFG->_S_PSP_Task);
 
-	Task_CFG->Current_PSP_Task--;
-	//DUMMY xPSR --> you must put T = 1 to avoid Bus Fault (Thumb2 Technology)
-	Task_CFG->Current_PSP_Task = 0x01000000;
+	Task_Ref_CFG->Current_PSP_Task--;
+	*(Task_Ref_CFG->Current_PSP_Task) = 0x01000000;	//DUMMY xPSR --> you must put T = 1 to avoid Bus Fault (Thumb2 Technology)
 
-	Task_CFG->Current_PSP_Task--;
-	Task_CFG->Current_PSP_Task = (unsigned int)(Task_CFG->PF_Task_Entry);	//DUMMY PC
+	Task_Ref_CFG->Current_PSP_Task--;
+	*(Task_Ref_CFG->Current_PSP_Task) = (unsigned int)(Task_Ref_CFG->PF_Task_Entry);	//DUMMY PC
 
-	Task_CFG->Current_PSP_Task--;
-	Task_CFG->Current_PSP_Task = 0xFFFFFFFD;	//DUMMY LR
+	Task_Ref_CFG->Current_PSP_Task--;
+	*(Task_Ref_CFG->Current_PSP_Task) = 0xFFFFFFFD;	//DUMMY LR --> (EXECUTION RETURN CODE --> Thread Mode, PSP)
+
+	//Still 13 General Purpose Register --> We dummy them to 0
+	for(int i = 0; i < 13; i++)
+	{
+		Task_Ref_CFG->Current_PSP_Task--;
+		*(Task_Ref_CFG->Current_PSP_Task) = 0;
+	}
+
 }
 
 MYRTOS_ES_t MyRTOS_Create_Task(Task_Ref_t *Task_Ref_Config)

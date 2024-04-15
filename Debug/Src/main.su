@@ -1,1 +1,4 @@
-main.c:42:5:main	16	static
+main.c:46:6:Task1_Func	4	static
+main.c:54:6:Task2_Func	4	static
+main.c:62:6:Task3_Func	4	static
+main.c:70:5:main	16	static

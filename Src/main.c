@@ -39,6 +39,34 @@
 
 #include "Scheduler.h"
 
+
+Task_Ref_t Task1, Task2, Task3;
+
+
+void Task1_Func(void)
+{
+	while(1)
+	{
+
+	}
+}
+
+void Task2_Func(void)
+{
+	while(1)
+	{
+
+	}
+}
+
+void Task3_Func(void)
+{
+	while(1)
+	{
+
+	}
+}
+
 int main(void)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -47,9 +75,41 @@ int main(void)
 	HW_init();
 
 	Local_enuErrorState = MYRTOS_init();
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
 
+	//Configuration of task1
+	Task1.Task_Stack_Size = 1024;
+	Task1.PF_Task_Entry = Task1_Func;
+	Task1.Task_Priority = 3;
+	strcpy(Task1.Task_Name, "Task_1");
 
+	//Configuration of task2
+	Task2.Task_Stack_Size = 1024;
+	Task2.PF_Task_Entry = Task2_Func;
+	Task2.Task_Priority = 3;
+	strcpy(Task2.Task_Name, "Task_2");
 
+	//Configuration of task1
+	Task3.Task_Stack_Size = 1024;
+	Task3.PF_Task_Entry = Task3_Func;
+	Task3.Task_Priority = 3;
+	strcpy(Task3.Task_Name, "Task_3");
+
+	//Create the 1st Task
+	Local_enuErrorState = MyRTOS_Create_Task(&Task1);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
+	//Create the 2nd Task
+	Local_enuErrorState = MyRTOS_Create_Task(&Task2);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
+	//Create the 3rd Task
+	Local_enuErrorState = MyRTOS_Create_Task(&Task3);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
 
 
 	/* Loop forever */
