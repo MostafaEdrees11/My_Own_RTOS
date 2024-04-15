@@ -165,3 +165,8 @@ graph TD;
 	MYRTOS_init --> Configure_IDLE_Task
 ```
 
+### Debug IDLE Task Stack
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/IDLE%20Task.gif) 
+### Debug Task1 Stack
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Task1.gif) 
+
