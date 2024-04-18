@@ -85,5 +85,8 @@ typedef struct
  */
 MYRTOS_ES_t MYRTOS_init(void);
 MYRTOS_ES_t MyRTOS_Create_Task(Task_Ref_t *Task_Ref_Config);
+MYRTOS_ES_t MyRTOS_Activate_Task(Task_Ref_t *Task_Ref_Config);
+MYRTOS_ES_t MyRTOS_Terminate_Task(Task_Ref_t *Task_Ref_Config);
+MYRTOS_ES_t MyRTOS_Start_OS(void);
 
 #endif /* INC_SCHEDULER_H_ */

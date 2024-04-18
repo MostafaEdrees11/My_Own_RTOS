@@ -84,4 +84,57 @@ void HW_init(void)
 
 
 
+	/*
+	 * ------------------------------------------------------------------------------------------
+	 * | Decrease PendSV Interrupt Priority to be less than or equal SysTick Interrupt Priority |
+	 * | we will use __NVIC_SetPriority from core_cm3.h to set the priority                     |
+	 * | we will get the priority of PendSV and SysTick from ARMCM3.h                           |
+	 * | PendSV_IRQn = -2 --> 14          | SysTick_IRQn = -1 --> 15                            |
+	 * ------------------------------------------------------------------------------------------
+	 */
+	IRQn_Type PendSV_Priority = PendSV_IRQn;
+	IRQn_Type SysTick_Priority = SysTick_IRQn;
+	__NVIC_SetPriority(PendSV_Priority, SysTick_Priority);
+
+
+}
+
+void Trigger_OS_PendSV(void)
+{
+	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+}
+
+unsigned int OS_Start_Ticker(void)
+{
+	/*
+	 * Clock initialized with 8 MHz
+	 * ------------------------------------
+	 * | Clock: 				8 MHz	  |
+	 * | Time_one_count:		0.0125 us |
+	 * ------------------------------------
+	 * | num_counts	-----> 	1 Millisecond |
+	 * | num_counts = 8000 count		  |
+	 * ------------------------------------
+	 */
+	return SysTick_Config(8000);
+}
+
+unsigned char SysTick_Led;
+void SysTick_Handler(void)
+{
+	SysTick_Led ^= 1;
+
+	/*
+	 * -----------------------------------
+	 * |Decide What task should run Next |
+	 * -----------------------------------
+	 */
+	OS_Decide_What_Next();
+
+	/*
+	 * -----------------------------------------------------------
+	 * |Trigger OS_PendSV (Switch Context/Restore for our Tasks) |
+	 * -----------------------------------------------------------
+	 */
+	Trigger_OS_PendSV();
 }

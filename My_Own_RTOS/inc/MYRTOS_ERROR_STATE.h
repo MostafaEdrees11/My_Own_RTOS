@@ -12,7 +12,9 @@ typedef enum
 {
 	ES_NoError,
 	ES_Ready_Queue_Init_Error,
-	ES_Error_Task_Exceeded_Stack_Size
+	ES_Error_Task_Exceeded_Stack_Size,
+	ES_Error_Bubble_Sort,
+	ES_Error_SysTick_coounting
 }MYRTOS_ES_t;
 
 #endif /* INC_MYRTOS_ERROR_STATE_H_ */

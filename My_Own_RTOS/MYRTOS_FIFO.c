@@ -22,8 +22,8 @@ FIFO_Buf_Status FIFO_init (FIFO_Buf_t *P_fifo, FIFO_element_type *buf, uint32_t 
 
 	//initialize fifo
 	P_fifo->base = buf;
-	P_fifo->tail = buf;
-	P_fifo->head = buf;
+	P_fifo->tail = P_fifo->base;
+	P_fifo->head = P_fifo->base;
 	P_fifo->length = length;
 	P_fifo->count = 0;
 
@@ -46,6 +46,25 @@ FIFO_Buf_Status FIFO_IS_FULL(FIFO_Buf_t *P_fifo)
 
 	if(P_fifo->count == P_fifo->length)
 		return FIFO_full;
+
+	return FIFO_no_error;
+}
+
+/**
+ **********************************************************************************
+ * @function_name	: FIFO_IS_EMPTY
+ * @arguments		: pointer to LIFO
+ * @brief			: it's used to check if fifo is empty or not.
+ **********************************************************************************
+ **/
+FIFO_Buf_Status FIFO_IS_EMPTY(FIFO_Buf_t *P_fifo)
+{
+	//check if fifo is valid or not.
+	if(!P_fifo->base || !P_fifo->tail || !P_fifo->head)
+		return FIFO_null;
+
+	if(P_fifo->count == 0)
+		return FIFO_empty;
 
 	return FIFO_no_error;
 }

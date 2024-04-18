@@ -17,6 +17,7 @@ The user should write the tasks that he needs to execute them.
 ```mermaid
 graph TD;
 	User_Task --> its_own_priority;
+	User_Task --> its_own_stack;
 	User_Task --> its_own_operations;
 ```
 

@@ -42,12 +42,13 @@
 
 Task_Ref_t Task1, Task2, Task3;
 
+unsigned char Task1_Led, Task2_Led, Task3_Led;
 
 void Task1_Func(void)
 {
 	while(1)
 	{
-
+		Task1_Led ^= 1;
 	}
 }
 
@@ -55,7 +56,7 @@ void Task2_Func(void)
 {
 	while(1)
 	{
-
+		Task2_Led ^= 1;
 	}
 }
 
@@ -63,7 +64,7 @@ void Task3_Func(void)
 {
 	while(1)
 	{
-
+		Task3_Led ^= 1;
 	}
 }
 
@@ -108,6 +109,23 @@ int main(void)
 
 	//Create the 3rd Task
 	Local_enuErrorState = MyRTOS_Create_Task(&Task3);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
+	//Activate the 1st Task
+	Local_enuErrorState = MyRTOS_Activate_Task(&Task1);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
+	Local_enuErrorState = MyRTOS_Activate_Task(&Task2);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
+	Local_enuErrorState = MyRTOS_Activate_Task(&Task3);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
+	Local_enuErrorState = MyRTOS_Start_OS();
 	if(Local_enuErrorState != ES_NoError)
 		while(1);
 

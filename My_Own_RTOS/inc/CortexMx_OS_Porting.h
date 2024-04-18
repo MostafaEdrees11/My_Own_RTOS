@@ -13,7 +13,7 @@
  * | Includes |
  * ------------
  */
-#include "ARMCM3.h"
+#include "core_cm3.h"
 
 extern unsigned int _estack;
 extern unsigned int _eheap;
@@ -25,6 +25,8 @@ extern unsigned int _eheap;
  * ======================================================================
  */
 void HW_init(void);
+void Trigger_OS_PendSV(void);
+unsigned int OS_Start_Ticker(void);
 
 
 /*

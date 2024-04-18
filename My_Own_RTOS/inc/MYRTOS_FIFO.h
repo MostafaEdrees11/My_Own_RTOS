@@ -52,6 +52,7 @@ typedef enum
  */
 FIFO_Buf_Status FIFO_init (FIFO_Buf_t *P_fifo, FIFO_element_type *buf, uint32_t length);
 FIFO_Buf_Status FIFO_IS_FULL(FIFO_Buf_t *P_fifo);
+FIFO_Buf_Status FIFO_IS_EMPTY(FIFO_Buf_t *P_fifo);
 FIFO_Buf_Status FIFO_Enqueue_Item(FIFO_Buf_t *P_fifo, FIFO_element_type item);
 FIFO_Buf_Status FIFO_Dequeue_Item(FIFO_Buf_t *P_fifo, FIFO_element_type *item);
 void FIFO_Print (FIFO_Buf_t *P_fifo);
