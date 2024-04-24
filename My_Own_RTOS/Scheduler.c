@@ -20,6 +20,7 @@
 FIFO_Buf_t Ready_Queue;
 Task_Ref_t* Ready_Queue_FIFO[Max_Num_of_Tasks];
 
+//Idle Task
 Task_Ref_t MyRTOS_IDLE_TASK;
 
 //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -106,9 +107,9 @@ struct
  *          |                |                      |         |                      |
  *          |                |                      |         |                      |
  *          |                |                      |         |                      |
- *          |                |                      |         |                      |
- *          |                |                      |         |                      |
- *          |                |                      |         |                      |
+ *          |                |                      |         |                      |         ...
+ *          |                |                      |         |                      |         |
+ *          |                |                      |         |                      |         |
  *          |       ---------                        ---------                        ---------
  *          |       | Task1 |                        | Task2 |                        | Task1 |
  *          |       ---------                        ---------                        ---------
@@ -116,13 +117,21 @@ struct
  *          |
  *          |
  *          |________________________________________________________________________________________ Time
- *                           ^                                ^
- *                           |                                |
- *                           1ms (Ticker)                     1ms (Ticker)
+ *                           ^                                ^                                ^
+ *                           |                                |                                |
+ *                           1ms (Ticker)                     1ms (Ticker)                     1ms (Ticker)
  *
  *          				<< Task1 Priority == Task2 Priority    >>
  *          				<< Round Robin between Task1 and Task2 >>
  *          				<< Each Task work for 1ms              >>
+ */
+
+/*
+ * Function Name : PendSV_Handler
+ * Function [IN] : none
+ * Function [OUT]: none
+ * Usage         : it's PendSV handler and we use it to make context switch to the current task
+ *                 and context restore for the next task
  */
 __attribute ((naked)) void PendSV_Handler(void)
 {
@@ -213,8 +222,11 @@ __attribute ((naked)) void PendSV_Handler(void)
 	 * | Restore The Context of the Next task |
 	 * ----------------------------------------
 	 */
-	OS_Control_t.Current_Task = OS_Control_t.Next_Task;
-	OS_Control_t.Next_Task = NULL;
+	if(OS_Control_t.Next_Task != NULL)
+	{
+		OS_Control_t.Current_Task = OS_Control_t.Next_Task;
+		OS_Control_t.Next_Task = NULL;
+	}
 
 	/*
 	 * 1. Write the values of registers from memory to CPU registers
@@ -288,7 +300,12 @@ __attribute ((naked)) void PendSV_Handler(void)
 	__asm("BX LR");
 }
 
-
+/*
+ * Function Name : MyRTOS_Create_MainStack
+ * Function [IN] : none
+ * Function [OUT]: none
+ * Usage         : it's used to limit the bounds of Main Stack that we will use it for OS & Interrupts
+ */
 void MyRTOS_Create_MainStack(void)
 {
 	OS_Control_t._S_MSP_OS = (unsigned int)(&_estack);
@@ -299,6 +316,12 @@ void MyRTOS_Create_MainStack(void)
 }
 
 unsigned char IDLE_Task_Led;
+/*
+ * Function Name : IDLE_TASK_FUNC
+ * Function [IN] : none
+ * Function [OUT]: none
+ * Usage         : it's the function of the idle task that will executed when no task is running
+ */
 void IDLE_TASK_FUNC(void)
 {
 	while(1)
@@ -308,6 +331,12 @@ void IDLE_TASK_FUNC(void)
 	}
 }
 
+/*
+ * Function Name : MYRTOS_init
+ * Function [IN] : none
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to initialize RTOS like create main task & configure idle task
+ */
 MYRTOS_ES_t MYRTOS_init(void)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -335,6 +364,12 @@ MYRTOS_ES_t MYRTOS_init(void)
 	return Local_enuErrorState;
 }
 
+/*
+ * Function Name : MyRTOS_Create_Task_Stack
+ * Function [IN] : it takes a pointer to task that we need to create a task for it
+ * Function [OUT]: none
+ * Usage         : it's used to limit the bounds of Process Stack that we will use it for this task
+ */
 void MyRTOS_Create_Task_Stack(Task_Ref_t *Task_Ref_CFG)
 {
 	/*
@@ -387,6 +422,12 @@ void MyRTOS_Create_Task_Stack(Task_Ref_t *Task_Ref_CFG)
 
 }
 
+/*
+ * Function Name : MyRTOS_Create_Task
+ * Function [IN] : it takes a pointer to task configuration that we need to create task it
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : we use it to create task such as create its stack and configure its state
+ */
 MYRTOS_ES_t MyRTOS_Create_Task(Task_Ref_t *Task_Ref_Config)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -449,13 +490,25 @@ MYRTOS_ES_t MyRTOS_Create_Task(Task_Ref_t *Task_Ref_Config)
 	return Local_enuErrorState;
 }
 
+/*
+ * Enumeration Name: SVC_ID_t
+ * Usage:          : it has all cases of SVC IDs
+ */
 typedef enum
 {
-	SVC_Activate_Task,
+	SVC_Activate_Task = 1,
 	SVC_Terminate_Task,
-	SVC_Task_Waiting_Time
+	SVC_Task_Waiting_Time,
+	SVC_Acquire_Mutex,
+	SVC_Release_Mutex
 }SVC_ID_t;
 
+/*
+ * Function Name : Bubble_Sort_Tasks
+ * Function [IN] : none
+ * Function [OUT]: none
+ * Usage         : it's used to sort the tasks on scheduler table based on the priority of each task
+ */
 void Bubble_Sort_Tasks(void)
 {
 	unsigned int i, j, Num_Tasks;
@@ -477,6 +530,13 @@ void Bubble_Sort_Tasks(void)
 	}
 }
 
+
+/*
+ * Function Name : MyRTOS_Update_Scheduler_Tabel
+ * Function [IN] : none
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to update scheduler table and rearrange the tasks in the table
+ */
 MYRTOS_ES_t MyRTOS_Update_Scheduler_Tabel(void)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -488,6 +548,12 @@ MYRTOS_ES_t MyRTOS_Update_Scheduler_Tabel(void)
 	return Local_enuErrorState;
 }
 
+/*
+ * Function Name : MyRTOS_Update_Ready_Queue
+ * Function [IN] : none
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to update ready queue and add to it the tasks that should be in ready state
+ */
 MYRTOS_ES_t MyRTOS_Update_Ready_Queue(void)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -565,6 +631,12 @@ MYRTOS_ES_t MyRTOS_Update_Ready_Queue(void)
 	return Local_enuErrorState;
 }
 
+/*
+ * Function Name : OS_Decide_What_Next
+ * Function [IN] : none
+ * Function [OUT]: none
+ * Usage         : it's used to decide which task that should run next the current task
+ */
 void OS_Decide_What_Next(void)
 {
 	//This in case The Queue is empty and OS_Control_t.Current_Task->Task_State != Suspend_State
@@ -596,7 +668,13 @@ void OS_Decide_What_Next(void)
 	}
 }
 
-
+/*
+ * Function Name : OS_SVC_Services
+ * Function [IN] : it tasks a pointer to the start address memory after we do switch context
+ *                 we will use it to get SVC ID and we take it from R0
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to determine the SVC ID then call the SVC handler with correct id
+ */
 MYRTOS_ES_t OS_SVC_Services(unsigned int *Stack_Frame_Pointer)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -633,14 +711,51 @@ MYRTOS_ES_t OS_SVC_Services(unsigned int *Stack_Frame_Pointer)
 		break;
 
 	case SVC_Task_Waiting_Time:
+		//Update Scheduler Table
+		Local_enuErrorState = MyRTOS_Update_Scheduler_Tabel();
+		if(Local_enuErrorState != ES_NoError)
+			while(1);
 
+		//Update Ready Queue
+		Local_enuErrorState = MyRTOS_Update_Ready_Queue();
+		if(Local_enuErrorState != ES_NoError)
+			while(1);
+		break;
+
+	case SVC_Acquire_Mutex:
+		//Update Scheduler Table
+		Local_enuErrorState = MyRTOS_Update_Scheduler_Tabel();
+		if(Local_enuErrorState != ES_NoError)
+			while(1);
+
+		//Update Ready Queue
+		Local_enuErrorState = MyRTOS_Update_Ready_Queue();
+		if(Local_enuErrorState != ES_NoError)
+			while(1);
+		break;
+
+	case SVC_Release_Mutex:
+		//Update Scheduler Table
+		Local_enuErrorState = MyRTOS_Update_Scheduler_Tabel();
+		if(Local_enuErrorState != ES_NoError)
+			while(1);
+
+		//Update Ready Queue
+		Local_enuErrorState = MyRTOS_Update_Ready_Queue();
+		if(Local_enuErrorState != ES_NoError)
+			while(1);
 		break;
 	}
 
 	return Local_enuErrorState;
 }
 
-
+/*
+ * Function Name : MyRTOS_OS_SVC_Set
+ * Function [IN] : it takes the ID of service that we need the OS do it
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to call SVC with specific to execute specific function
+ */
 MYRTOS_ES_t MyRTOS_OS_SVC_Set(SVC_ID_t svc_id)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -659,11 +774,41 @@ MYRTOS_ES_t MyRTOS_OS_SVC_Set(SVC_ID_t svc_id)
 	case SVC_Task_Waiting_Time:
 		__asm("SVC #0x03");
 		break;
+
+	case SVC_Acquire_Mutex:
+		__asm("SVC #0x04");
+		break;
+
+	case SVC_Release_Mutex:
+		__asm("SVC #0x05");
+		break;
 	}
 
 	return Local_enuErrorState;
 }
 
+/*
+ * Function Name : MyRTOS_Task_Init
+ * Function [IN] : it takes a pointer to task configuration and its cofiguration parameters
+ * Function [OUT]: none
+ * Usage         : it's used to initialize a task
+ */
+void MyRTOS_Task_Init(Task_Ref_t *Task_Ref_Config, unsigned int Stack_Size, void (*PF)(void), unsigned char Priority, char *Name)
+{
+	Task_Ref_Config->Task_Stack_Size = Stack_Size;
+	Task_Ref_Config->Task_Priority = Priority;
+
+	Task_Ref_Config->PF_Task_Entry = PF;
+
+	strcpy(Task_Ref_Config->Task_Name, Name);
+}
+
+/*
+ * Function Name : MyRTOS_Activate_Task
+ * Function [IN] : it takes a pointer to task configuration that we need to Activate it
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to activate task by adding it in waiting state then call SVC
+ */
 MYRTOS_ES_t MyRTOS_Activate_Task(Task_Ref_t *Task_Ref_Config)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -671,13 +816,19 @@ MYRTOS_ES_t MyRTOS_Activate_Task(Task_Ref_t *Task_Ref_Config)
 	//Task enter waiting state when we activate it
 	Task_Ref_Config->Task_State = Waiting_State;
 
-	//set svc interrupt
+	//set svc interrupt to activate the task
 	MyRTOS_OS_SVC_Set(SVC_Activate_Task);
 
 
 	return Local_enuErrorState;
 }
 
+/*
+ * Function Name : MyRTOS_Terminate_Task
+ * Function [IN] : it takes a pointer to task configuration that we need to Activate it
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to terminate task by adding it in suspend state then call SVC
+ */
 MYRTOS_ES_t MyRTOS_Terminate_Task(Task_Ref_t *Task_Ref_Config)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -685,9 +836,18 @@ MYRTOS_ES_t MyRTOS_Terminate_Task(Task_Ref_t *Task_Ref_Config)
 	//Task enter suspend state when we terminate it
 	Task_Ref_Config->Task_State = Suspend_State;
 
+	//set svc interrupt to terminate the task
+	MyRTOS_OS_SVC_Set(SVC_Terminate_Task);
+
 	return Local_enuErrorState;
 }
 
+/*
+ * Function Name : MyRTOS_Start_OS
+ * Function [IN] : none
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to start os by set it in running state and ....
+ */
 MYRTOS_ES_t MyRTOS_Start_OS(void)
 {
 	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
@@ -705,7 +865,7 @@ MYRTOS_ES_t MyRTOS_Start_OS(void)
 	//Start Ticker --> 1ms
 	Function_State = OS_Start_Ticker();
 	if(Function_State)
-		Local_enuErrorState = ES_Error_SysTick_coounting;
+		Local_enuErrorState = ES_Error_SysTick_counting;
 
 	//Set PSP with PSP of Current Task
 	OS_Set_PSP_Val(OS_Control_t.Current_Task->Current_PSP_Task);
@@ -721,3 +881,227 @@ MYRTOS_ES_t MyRTOS_Start_OS(void)
 
 	return Local_enuErrorState;
 }
+
+
+/*
+ * Task State:
+ *
+ * -----------           Task Wait (No_Ticks)           -----------         No_Ticks = 0                    -----------
+ * | Running |  	------------------------------>		| Suspend |		------------------------------> 	| Waiting |
+ * -----------           Task Blocking Enable           -----------         Task Blocking Disable           -----------
+ *
+ */
+
+/*
+ * Function Name : MyRTOS_Task_Wait
+ * Function [IN] : it takes the number of tick and pointer to the task
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to block the task in suspend state for a period of time
+ */
+MYRTOS_ES_t MyRTOS_Task_Wait(unsigned int No_Ticks, Task_Ref_t *Task_Ref_Config)
+{
+	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
+
+	//Task will enter Suspend state
+	Task_Ref_Config->Task_State = Suspend_State;
+
+	//Enable Blocking and fill the number of ticks
+	Task_Ref_Config->Task_Timing_Waiting.Task_Blocking = Blocking_Enable;
+	Task_Ref_Config->Task_Timing_Waiting.Ticks_Count = No_Ticks;
+
+	//Terminate the task now
+	MyRTOS_Terminate_Task(Task_Ref_Config);
+
+	return Local_enuErrorState;
+}
+
+/*
+ * Function Name : MyRTOS_Update_Waiting_Time
+ * Function [IN] : none
+ * Function [OUT]: none
+ * Usage         : it's used to see if the time of blocking task is terminated or not
+ */
+void MyRTOS_Update_Waiting_Time(void)
+{
+	unsigned int i;
+
+	//loop for task that in suspend state and it has its own waiting time
+	for(i = 0; i < OS_Control_t.No_of_Active_Tasks; i++)
+	{
+		if(OS_Control_t.OS_Tasks[i]->Task_State == Suspend_State)
+		{
+			if(OS_Control_t.OS_Tasks[i]->Task_Timing_Waiting.Task_Blocking == Blocking_Enable)
+			{
+				OS_Control_t.OS_Tasks[i]->Task_Timing_Waiting.Ticks_Count--;
+
+				//if the waiting time is finish we will disable blocking and enter the task in waiting state
+				if(OS_Control_t.OS_Tasks[i]->Task_Timing_Waiting.Ticks_Count == 0)
+				{
+					OS_Control_t.OS_Tasks[i]->Task_Timing_Waiting.Task_Blocking = Blocking_Disable;
+					OS_Control_t.OS_Tasks[i]->Task_State = Waiting_State;
+
+					MyRTOS_OS_SVC_Set(SVC_Task_Waiting_Time);
+				}
+			}
+		}
+	}
+}
+
+/*
+ * Function Name : MyRTOS_Mutex_Init
+ * Function [IN] : it takes pointer to Mutex and it's configuration
+ * Function [OUT]: none
+ * Usage         : it's used to initialize the mutex with the send configuration
+ */
+void MyRTOS_Mutex_Init(Mutex_Configuration_t *Mutex_Ref_Config, void *PayLoad, unsigned int PayLoad_Size, char *MUTEX_NAME)
+{
+	Mutex_Ref_Config->Current_Task_User = NULL;
+	Mutex_Ref_Config->Next_Task_User = NULL;
+
+	Mutex_Ref_Config->Data = PayLoad;
+	Mutex_Ref_Config->Data_Size = PayLoad_Size;
+
+	Mutex_Ref_Config->mutex_state = Mutex_Released;
+
+	strcpy(Mutex_Ref_Config->Mutex_Name, MUTEX_NAME);
+}
+
+/*
+ * ---------
+ * | Task1 |	---> Running 	------> Acquired a Mutex1 			---> Mutex is blocked now
+ * ---------
+ *
+ * ---------
+ * | Task2 |	---> Running 	------> Acquire the Mutex1 but it's blocked		---> Suspend
+ * ---------
+ *
+ * after some time ----> Mutex1 is released by Task1
+ * then we need to update the scheduler table and enter Task2 in waiting state
+ *
+ * ---------
+ * | Task2 |	---> Waiting	---> Ready		---> Running 	---> so now it can use the shared data
+ * ---------
+ */
+
+/*
+ * Function Name : MyRTOS_Acquire_Mutex
+ * Function [IN] : it takes a pointer to the task and pointer to the Mutex
+ * Function [OUT]: it's return the error state of function to check with it if any error happens
+ * Usage         : it's used to acquire the mutex by specific task
+ */
+MYRTOS_ES_t MyRTOS_Acquire_Mutex(Task_Ref_t *Task_Ref_Config, Mutex_Configuration_t *Mutex_Config)
+{
+	MYRTOS_ES_t Local_enuErrorState = ES_NoError;
+
+	//if the mutex is released and is not taken by any task
+	if(Mutex_Config->Current_Task_User == NULL || Mutex_Config->mutex_state == Mutex_Released)
+	{
+		Mutex_Config->Current_Task_User = Task_Ref_Config;
+		Mutex_Config->mutex_state = Mutex_Blocked;
+	}
+	else	//if the mutex taken and used by the current task
+	{
+		if(Mutex_Config->Next_Task_User == NULL) //There is no pending Task for this mutex
+		{
+			Mutex_Config->Next_Task_User = Task_Ref_Config;
+
+			//task will enter the suspend state till the mutex is released
+			Task_Ref_Config->Task_State = Suspend_State;
+
+			//terminate the task
+			MyRTOS_OS_SVC_Set(SVC_Terminate_Task);
+
+		}
+		else	//there is a pending task need this mutex
+		{
+			Local_enuErrorState = ES_Error_Many_User_Mutex;
+		}
+	}
+
+	return Local_enuErrorState;
+}
+
+/*
+ * Function Name : MyRTOS_Release_Mutex
+ * Function [IN] : it takes a pointer to the mutex
+ * Function [OUT]: none
+ * Usage         : it's used to release a mutex
+ */
+void MyRTOS_Release_Mutex(Mutex_Configuration_t *Mutex_Config)
+{
+	if(Mutex_Config->Current_Task_User == NULL || Mutex_Config->mutex_state == Mutex_Blocked)
+	{
+		Mutex_Config->Current_Task_User = Mutex_Config->Next_Task_User;
+		Mutex_Config->Next_Task_User = NULL;
+
+		Mutex_Config->mutex_state = Mutex_Released;
+
+		Mutex_Config->Current_Task_User->Task_State = Waiting_State;
+
+		MyRTOS_Activate_Task(Mutex_Config->Current_Task_User);
+	}
+}
+
+/*
+ * 										< Example on Priority Inversion>
+ *          ^
+ * Priority |
+ *          |
+ *          |
+ *          |     --------------------                                       ---------------------                                                                        ^ low Priority
+ *  Task1   |     | Task1 "Completed"|  <--- Acquire Mutex                   | Task1 "Completed" |  <--- Release the Mutex                                                |
+ *          |     --------------------                                       ---------------------                                                                        |
+ *          |                        |                                       |                    |                                                                       |
+ *          |                        |                                       |                    |                                                                       |
+ *          |                        |                                       |                    |                                                                       |
+ *          |                        |                                       |                    |                                                                       |
+ *          |                        ---------                       ---------                    |
+ *  Task2   |                        | Task2 |                       | Task2 |                    |
+ *          |                        ---------                       ---------                    |
+ *          |                                |                       |                            |
+ *          |                                |                       |                            |
+ *          |                                |                       |                            |
+ *          |                                |                       |                            |
+ *          |                                -------------------------                            ------------------
+ *  Task3   |                                | Task3 "Not Completed" | <--- Acquire same Mutex    | Complete Task3 |   <--- Now, we can acquire the same mutex
+ *          |                                -------------------------                            ------------------
+ *          |
+ *          |______________________________________________________________________________________________________________________________________________________ Time
+ *                                                                   ^                            ^
+ *                                                                   |                            |
+ *                                                                   |----------------------------|
+ *                                                                 <Priority Inversion Latency Time >
+ *
+ *
+ */
+
+
+/*
+ * 																		< Example on Dead Lock>
+ *          ^
+ * Priority |
+ *          |
+ *          |
+ *          |     -------------------------------------------------                                                                                   ----------------------------------------------------------------
+ *  Task1   |     | Task1 <--- Acquire Mutex1 then Activate Task3 |                                                                                   | Task1 <--- Acquire Mutex2 but can't because it used by Task3 |
+ *          |     -------------------------------------------------                                                                                   ----------------------------------------------------------------
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     |                                                                                  |
+ *          |                                                     -----------------------------------------------------------------------------------
+ *  Task3   |                                                     | Task3 <--- Acquire Mutex2 then Acquire Mutex1 but can't because it used by Task1|
+ *          |                                                     |----------------------------------------------------------------------------------
+ *          |
+ *          |______________________________________________________________________________________________________________________________________________________ Time
+ *
+ *
+ *
+ */

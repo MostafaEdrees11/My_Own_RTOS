@@ -125,6 +125,13 @@ void SysTick_Handler(void)
 	SysTick_Led ^= 1;
 
 	/*
+	 * -----------------------------------------------
+	 * |Update Waiting Time for each task every tick |
+	 * -----------------------------------------------
+	 */
+	MyRTOS_Update_Waiting_Time();
+
+	/*
 	 * -----------------------------------
 	 * |Decide What task should run Next |
 	 * -----------------------------------

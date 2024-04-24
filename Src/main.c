@@ -40,31 +40,106 @@
 #include "Scheduler.h"
 
 
-Task_Ref_t Task1, Task2, Task3;
+Task_Ref_t Task1, Task2, Task3, Task4;
 
-unsigned char Task1_Led, Task2_Led, Task3_Led;
+unsigned char Task1_Led, Task2_Led, Task3_Led, Task4_Led;
+
+Mutex_Configuration_t MUTEX1;
+Mutex_Configuration_t MUTEX2;
+
+char data1[3] = {1, 2, 3};
+char data2[3] = {1, 2, 3};
+
 
 void Task1_Func(void)
 {
+	static int count = 0;
+
 	while(1)
 	{
 		Task1_Led ^= 1;
+
+		count++;
+		if(count == 100)
+		{
+			MyRTOS_Acquire_Mutex(&Task1, &MUTEX1);
+			MyRTOS_Activate_Task(&Task4);
+			MyRTOS_Acquire_Mutex(&Task1, &MUTEX2);
+		}
+
+		if(count == 200)
+		{
+			MyRTOS_Release_Mutex(&MUTEX1);
+			count = 0;
+		}
 	}
 }
 
 void Task2_Func(void)
 {
+	static int count = 0;
+
 	while(1)
 	{
 		Task2_Led ^= 1;
+
+		count++;
+		if(count == 100)
+		{
+			MyRTOS_Activate_Task(&Task3);
+		}
+
+		if(count == 200)
+		{
+			count = 0;
+			MyRTOS_Terminate_Task(&Task2);
+		}
 	}
 }
 
 void Task3_Func(void)
 {
+	static int count = 0;
+
 	while(1)
 	{
 		Task3_Led ^= 1;
+
+		count++;
+		if(count == 100)
+		{
+			MyRTOS_Activate_Task(&Task4);
+		}
+
+		if(count == 200)
+		{
+			count = 0;
+			MyRTOS_Terminate_Task(&Task3);
+		}
+	}
+}
+
+void Task4_Func(void)
+{
+	static int count = 0;
+
+	while(1)
+	{
+		Task4_Led ^= 1;
+
+		count++;
+		if(count == 10)
+		{
+			MyRTOS_Acquire_Mutex(&Task4, &MUTEX2);
+			MyRTOS_Acquire_Mutex(&Task4, &MUTEX1);
+		}
+
+		if(count == 200)
+		{
+			count = 0;
+			MyRTOS_Release_Mutex(&MUTEX1);
+			MyRTOS_Terminate_Task(&Task4);
+		}
 	}
 }
 
@@ -75,6 +150,9 @@ int main(void)
 	//HW_init (Initialize Clock Tree, Rest Controller)
 	HW_init();
 
+	MyRTOS_Mutex_Init(&MUTEX1, data1, 3, "mutex1");
+	MyRTOS_Mutex_Init(&MUTEX2, data2, 3, "mutex2");
+
 	Local_enuErrorState = MYRTOS_init();
 	if(Local_enuErrorState != ES_NoError)
 		while(1);
@@ -82,7 +160,7 @@ int main(void)
 	//Configuration of task1
 	Task1.Task_Stack_Size = 1024;
 	Task1.PF_Task_Entry = Task1_Func;
-	Task1.Task_Priority = 3;
+	Task1.Task_Priority = 4;
 	strcpy(Task1.Task_Name, "Task_1");
 
 	//Configuration of task2
@@ -91,11 +169,17 @@ int main(void)
 	Task2.Task_Priority = 3;
 	strcpy(Task2.Task_Name, "Task_2");
 
-	//Configuration of task1
+	//Configuration of task3
 	Task3.Task_Stack_Size = 1024;
 	Task3.PF_Task_Entry = Task3_Func;
-	Task3.Task_Priority = 3;
+	Task3.Task_Priority = 2;
 	strcpy(Task3.Task_Name, "Task_3");
+
+	//Configuration of task4
+	Task4.Task_Stack_Size = 1024;
+	Task4.PF_Task_Entry = Task4_Func;
+	Task4.Task_Priority = 1;
+	strcpy(Task4.Task_Name, "Task_4");
 
 	//Create the 1st Task
 	Local_enuErrorState = MyRTOS_Create_Task(&Task1);
@@ -112,16 +196,13 @@ int main(void)
 	if(Local_enuErrorState != ES_NoError)
 		while(1);
 
+	//Create the 4th Task
+	Local_enuErrorState = MyRTOS_Create_Task(&Task4);
+	if(Local_enuErrorState != ES_NoError)
+		while(1);
+
 	//Activate the 1st Task
 	Local_enuErrorState = MyRTOS_Activate_Task(&Task1);
-	if(Local_enuErrorState != ES_NoError)
-		while(1);
-
-	Local_enuErrorState = MyRTOS_Activate_Task(&Task2);
-	if(Local_enuErrorState != ES_NoError)
-		while(1);
-
-	Local_enuErrorState = MyRTOS_Activate_Task(&Task3);
 	if(Local_enuErrorState != ES_NoError)
 		while(1);
 

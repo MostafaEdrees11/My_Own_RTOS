@@ -171,3 +171,6 @@ graph TD;
 ### Debug Task1 Stack
 ![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Task1.gif) 
 
+### Scheduling Algorithm
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Sheduling%20Algorithm.png)
+

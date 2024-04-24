@@ -54,7 +54,6 @@ struct Task_Timing_Waiting_t
 	unsigned int Ticks_Count;
 };
 
-
 //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 //Task Reference Configuration:
 //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -76,6 +75,27 @@ typedef struct
 	struct Task_Timing_Waiting_t Task_Timing_Waiting;
 }Task_Ref_t;
 
+//-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+//Mutex States: we use binary semaphore
+//-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+typedef enum
+{
+	Mutex_Blocked,
+	Mutex_Released
+}Binary_Semaphore_State_t;
+
+//-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+//Mutex Configuration:
+//-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+typedef struct
+{
+	void *Data;	//this to be generic to any data type not only to character
+	unsigned int Data_Size;
+	Task_Ref_t *Current_Task_User;
+	Task_Ref_t *Next_Task_User;
+	char Mutex_Name[30];
+	Binary_Semaphore_State_t mutex_state;	//Not Entered by user
+}Mutex_Configuration_t;
 
 
 /*
@@ -84,9 +104,14 @@ typedef struct
  * ======================================================================
  */
 MYRTOS_ES_t MYRTOS_init(void);
+void MyRTOS_Task_Init(Task_Ref_t *Task_Ref_Config, unsigned int Stack_Size, void (*PF)(void), unsigned char Priority, char *Name);
 MYRTOS_ES_t MyRTOS_Create_Task(Task_Ref_t *Task_Ref_Config);
 MYRTOS_ES_t MyRTOS_Activate_Task(Task_Ref_t *Task_Ref_Config);
 MYRTOS_ES_t MyRTOS_Terminate_Task(Task_Ref_t *Task_Ref_Config);
 MYRTOS_ES_t MyRTOS_Start_OS(void);
+MYRTOS_ES_t MyRTOS_Task_Wait(unsigned int No_Ticks, Task_Ref_t *Task_Ref_Config);
+void MyRTOS_Mutex_Init(Mutex_Configuration_t *Mutex_Ref_Config, void *PayLoad, unsigned int PayLoad_Size, char *MUTEX_NAME);
+MYRTOS_ES_t MyRTOS_Acquire_Mutex(Task_Ref_t *Task_Ref_Config, Mutex_Configuration_t *Mutex_Config);
+void MyRTOS_Release_Mutex(Mutex_Configuration_t *Mutex_Config);
 
 #endif /* INC_SCHEDULER_H_ */
