@@ -166,48 +166,48 @@ graph TD;
 	MYRTOS_init --> Configure_IDLE_Task
 ```
 
+___
 ### Scheduling Algorithm
 ![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Sheduling%20Algorithm.PNG)
-
+___
 ### Debug IDLE Task Stack
 ![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/IDLE%20Task.gif)
-
+___
 ### Debug Task1 Stack
 ![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Task1.gif)
-
+___
 ### Task1 if only active with IDLE Task
 IDLE task will run for only one time when we starting OS 
 then Task1 will run for the next time
-![gitHub]() 
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Task1_With_IDLE.gif) 
+___
 ### Task1 & Task2 & Task3 are the same priority
-![gitHub]()
-
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Three_Tasks_with_same_Priority.gif)
+___
 ### Task1 & Task2 & Task3 are the same priority
 ```
 * Task1 works every 20 ticks
 ` Task2 works every 40 ticks
 ` Task3 works every 80 ticks
 ```
-![gitHub]()
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Three_Tasks_with_same_Priority_specific_time.gif)
+___
 ### Task1 & Task2 & Task3 are the same priority and Task4 has higher priority
 we activate it after 0xFF and terminate it after it work for 0xFF count
-![gitHub]()
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Three_Tasks_with_same_Priority_and_one_with_higher_priority.gif)
+___
 ### Task1 & Task2 & Task3 & Task4 have different priorities
 ```
 * Task1 is low priority than Task2
 * Task2 is low priority than Task3
 * Task3 is low priority than Task4
 ```
-![gitHub]()
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Four_Tasks_with_different_Priority.gif)
+___
 ### Priority Inversion Example
-![gitHub]()
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Priority%20Inversion%20.gif)
+___
 ### DeadLock Example
-![gitHub]()
-
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Deadlock.gif)
+___
 
