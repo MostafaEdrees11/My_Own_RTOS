@@ -327,7 +327,7 @@ void IDLE_TASK_FUNC(void)
 	while(1)
 	{
 		IDLE_Task_Led ^= 1;
-		__asm("NOP");
+		__asm("WFE");
 	}
 }
 

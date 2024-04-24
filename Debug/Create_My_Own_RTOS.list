@@ -1028,8 +1028,8 @@ void IDLE_TASK_FUNC(void)
  800068c:	b2da      	uxtb	r2, r3
  800068e:	4b02      	ldr	r3, [pc, #8]	; (8000698 <IDLE_TASK_FUNC+0x18>)
  8000690:	701a      	strb	r2, [r3, #0]
-		__asm("NOP");
- 8000692:	bf00      	nop
+		__asm("WFE");
+ 8000692:	bf20      	wfe
 		IDLE_Task_Led ^= 1;
  8000694:	e7f6      	b.n	8000684 <IDLE_TASK_FUNC+0x4>
  8000696:	bf00      	nop
@@ -2971,10 +2971,11 @@ void Task4_Func(void)
  800110e:	3301      	adds	r3, #1
  8001110:	4a0e      	ldr	r2, [pc, #56]	; (800114c <Task4_Func+0x54>)
  8001112:	6013      	str	r3, [r2, #0]
-		if(count == 10)
+
+		if(count == 30)
  8001114:	4b0d      	ldr	r3, [pc, #52]	; (800114c <Task4_Func+0x54>)
  8001116:	681b      	ldr	r3, [r3, #0]
- 8001118:	2b0a      	cmp	r3, #10
+ 8001118:	2b1e      	cmp	r3, #30
  800111a:	d107      	bne.n	800112c <Task4_Func+0x34>
 		{
 			MyRTOS_Acquire_Mutex(&Task4, &MUTEX2);
@@ -2986,7 +2987,6 @@ void Task4_Func(void)
  8001126:	480b      	ldr	r0, [pc, #44]	; (8001154 <Task4_Func+0x5c>)
  8001128:	f7ff fdfd 	bl	8000d26 <MyRTOS_Acquire_Mutex>
 		}
-
 		if(count == 200)
  800112c:	4b07      	ldr	r3, [pc, #28]	; (800114c <Task4_Func+0x54>)
  800112e:	681b      	ldr	r3, [r3, #0]

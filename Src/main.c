@@ -128,12 +128,12 @@ void Task4_Func(void)
 		Task4_Led ^= 1;
 
 		count++;
-		if(count == 10)
+
+		if(count == 30)
 		{
 			MyRTOS_Acquire_Mutex(&Task4, &MUTEX2);
 			MyRTOS_Acquire_Mutex(&Task4, &MUTEX1);
 		}
-
 		if(count == 200)
 		{
 			count = 0;

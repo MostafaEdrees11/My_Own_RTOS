@@ -166,11 +166,48 @@ graph TD;
 	MYRTOS_init --> Configure_IDLE_Task
 ```
 
-### Debug IDLE Task Stack
-![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/IDLE%20Task.gif) 
-### Debug Task1 Stack
-![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Task1.gif) 
-
 ### Scheduling Algorithm
-![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Sheduling%20Algorithm.png)
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Sheduling%20Algorithm.PNG)
+
+### Debug IDLE Task Stack
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/IDLE%20Task.gif)
+
+### Debug Task1 Stack
+![gitHub](https://github.com/MostafaEdrees11/My_Own_RTOS/blob/master/Images/Task1.gif)
+
+### Task1 if only active with IDLE Task
+IDLE task will run for only one time when we starting OS 
+then Task1 will run for the next time
+![gitHub]() 
+
+### Task1 & Task2 & Task3 are the same priority
+![gitHub]()
+
+
+### Task1 & Task2 & Task3 are the same priority
+```
+* Task1 works every 20 ticks
+` Task2 works every 40 ticks
+` Task3 works every 80 ticks
+```
+![gitHub]()
+
+### Task1 & Task2 & Task3 are the same priority and Task4 has higher priority
+we activate it after 0xFF and terminate it after it work for 0xFF count
+![gitHub]()
+
+### Task1 & Task2 & Task3 & Task4 have different priorities
+```
+* Task1 is low priority than Task2
+* Task2 is low priority than Task3
+* Task3 is low priority than Task4
+```
+![gitHub]()
+
+### Priority Inversion Example
+![gitHub]()
+
+### DeadLock Example
+![gitHub]()
+
 
